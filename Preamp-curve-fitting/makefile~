@@ -1,0 +1,37 @@
+# Compiler flags
+CFLAGS=`root-config --cflags`
+CFLAGS+=-W -Wall -Wextra -Wno-long-long
+CFLAGS+=-fno-common
+CFLAGS+=-I.
+
+# Debug flags
+CFLAGS+=-g
+
+# compiler
+CC=g++
+
+LDFLAGS=`root-config --glibs` -lGeom -lgfortran -lm
+
+PROGRAM =preamp-file-calibration
+
+OBJECTS = 
+
+.PHONY: all clean
+
+all: $(PROGRAM)
+	
+$(PROGRAM):	$(PROGRAM).o $(OBJECTS)
+	@echo -n ">>> Linking "
+	$(CC) -o $(PROGRAM) $(OBJECTS) $(PROGRAM).o $(LDFLAGS)
+
+%.o: %.cpp | %.h
+	@echo -e -n " CC $<:\t";
+	$(CC) -c $< $(CFLAGS)  
+
+%.o: %.cpp
+	@echo -e -n " CC $<:\t";
+	$(CC) -c $< $(CFLAGS)
+		
+clean:
+	rm -f *.o
+	rm -f $(PROGRAM)

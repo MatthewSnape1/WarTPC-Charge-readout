@@ -1,0 +1,182 @@
+#include <TFile.h>
+#include <TF1.h>
+#include <TH1.h>
+#include <TGraphErrors.h>
+#include <math.h>
+#include <TRandom2.h>
+#include <TCanvas.h>
+#include <TFitResult.h>
+#include <TLegend.h>
+
+int main(){
+
+  TGraphErrors* old_sleeve = new TGraphErrors();
+
+  TGraphErrors* old_sleeve_fit = new TGraphErrors();
+
+  TGraphErrors* new_sleeve  = new TGraphErrors();
+
+  TGraphErrors* new_sleeve_stable = new TGraphErrors();
+
+  /// OLD DATA ///
+
+  double old_y[10] = {4.0 , 5.5 , 5.9 , 6.0 , 7.3 , 7.8 , 9.3 , 10.4 , 11.3 , 11.9};
+
+  double old_x[10] ={0.69 , 0.99 , 1.49 , 1.98 , 2.48 , 2.98 , 3.49 , 3.99 , 4.49 , 4.99};
+
+  /// NEW DATA ///
+
+  double new_y[10] = {5.0, 6.9 , 7.7 , 8.8 , 11.1 , 13.3 , 13.0 , 12.7 , 14.7 , 12.5};
+
+  double new_x[10] = {0.67 , 1.00 , 1.49 , 1.99 , 2.49 , 3.01 , 3.49 , 3.99 , 4.49 , 4.99};
+
+  /// ERRORS ///
+
+  double y_err = 0.1;
+
+  double x_err = 0.01;
+
+  /// ADDING DATA ///
+
+  for (int ii = 0;ii<10;ii++){
+
+    old_sleeve->SetPoint(ii,old_x[ii],old_y[ii]);
+    old_sleeve->SetPointError(ii,x_err,y_err);
+  }
+
+  for (int jj = 0;jj<10;jj++){
+
+    new_sleeve->SetPoint(jj,new_x[jj],new_y[jj]);
+    new_sleeve->SetPointError(jj,x_err,y_err);
+
+  }
+
+  /// FITTING GRAPHS ///
+
+  /// OLD SLEEVE ///
+
+  for (int ii = 0;ii<10;ii++){
+
+    old_sleeve_fit->SetPoint(ii,old_x[ii],old_y[ii]);
+    old_sleeve_fit->SetPointError(ii,x_err,y_err);
+  }
+
+  TF1* old_fit = new TF1("old_fit", "(TMath::Abs([0])*x*0.015) / ( log([1]*x*0.015) - log([2]) )",0.0,5.5 );
+  old_fit->SetParameter(0,690);
+  old_fit->SetParameter(1,10);
+  old_fit->SetParameter(2,0.02);
+
+  old_sleeve_fit->Fit(old_fit);
+  std::cout<<old_fit->GetChisquare()/old_fit->GetNDF()<<"\n";
+
+  /// NEW SLEEVE ///
+
+  for (int jj = 0;jj<5;jj++){
+
+  new_sleeve_stable->SetPoint(jj,new_x[jj],new_y[jj]);
+  new_sleeve_stable->SetPointError(jj,x_err,y_err);
+  }
+
+  TF1* new_fit = new TF1("new_fit", "(TMath::Abs([0])*x*0.015) / ( log([1]*x*0.015) - log([2]) )",0.0,5.5 );
+  new_fit->SetParameter(0,1100);
+  new_fit->SetParameter(1,8);
+  new_fit->SetParameter(2,0.01);
+
+  new_sleeve_stable->Fit(new_fit);
+  std::cout<<new_fit->GetChisquare()/new_fit->GetNDF()<<"\n";
+  
+  /// STYLING GRAPHS ///
+  
+  old_sleeve->SetMarkerColor(4);
+  old_sleeve->SetMarkerStyle(21);
+  old_sleeve->GetYaxis()->SetTitle("Cathode Breakdown Voltage (kV)");
+  old_sleeve->GetXaxis()->SetTitle("Vessel Pressure (bar)");
+  old_sleeve->SetTitle("New vs Old PTFE Sleeve Breakdown Voltage");
+  old_sleeve->GetXaxis()->SetRangeUser(0.0,7.0);
+  old_sleeve->GetYaxis()->SetRangeUser(0.0,20);
+
+  new_sleeve->SetMarkerColor(2);
+  new_sleeve->SetMarkerStyle(21);
+  new_sleeve->GetXaxis()->SetRangeUser(0.0,7.0);
+  new_sleeve->GetYaxis()->SetRangeUser(0.0,20);
+
+  /// FIT STYLING ///
+
+  double old_0 = old_fit->GetParameter(0);
+  double old_1 = old_fit->GetParameter(1);
+  double old_2 = old_fit->GetParameter(2);
+
+  double new_0 = new_fit->GetParameter(0);
+  double new_1 = new_fit->GetParameter(1);
+  double new_2 = new_fit->GetParameter(2);
+
+  /// OLD FITTED REGION ///
+
+  TF1* old_fitted = new TF1("old_fitted","(TMath::Abs([0])*x*0.015) / ( log([1]*x*0.015) - log([2]) )",0.65,5.0);
+  old_fitted->SetParameter(0,old_0);
+  old_fitted->SetParameter(1,old_1);
+  old_fitted->SetParameter(2,old_2);
+  old_fitted->SetLineColor(4);
+
+  /// OLD NON FITTED REGION ///
+
+  TF1* old_non_fitted = new TF1("old_non_fitted","(TMath::Abs([0])*x*0.015) / ( log([1]*x*0.015) - log([2]) )",0.0,5.5);
+  old_non_fitted->SetParameter(0,old_0);
+  old_non_fitted->SetParameter(1,old_1);
+  old_non_fitted->SetParameter(2,old_2);
+  old_non_fitted->SetLineColor(4);
+  old_non_fitted->SetLineStyle(3);
+
+  /// NEW FITTED REGION ///
+
+  TF1* new_fitted = new TF1("new_fitted","(TMath::Abs([0])*x*0.015) / ( log([1]*x*0.015) - log([2]) )",0.65,2.5);
+  new_fitted->SetParameter(0,new_0);
+  new_fitted->SetParameter(1,new_1);
+  new_fitted->SetParameter(2,new_2);
+  new_fitted->SetLineColor(2);
+
+  /// NEW NON FITTED REGION ///
+
+  TF1* new_non_fitted = new TF1("new_non_fitted","(TMath::Abs([0])*x*0.015) / ( log([1]*x*0.015) - log([2]) )",0.0,5.5);
+  new_non_fitted->SetParameter(0,new_0);
+  new_non_fitted->SetParameter(1,new_1);
+  new_non_fitted->SetParameter(2,new_2);
+  new_non_fitted->SetLineColor(2);
+  new_non_fitted->SetLineStyle(3);
+  
+  /// DRAWING GRAPHS ///
+
+  TCanvas* c1 = new TCanvas("c1","c1",0,0,2500,1000);
+
+  TPad *pad1 = new TPad("pad1","",0,0,1,1);
+  TPad *pad2 = new TPad("pad2","",0,0,1,1);
+  pad2->SetFillStyle(4000); //will be transparent
+  pad2->SetFrameFillStyle(0);
+
+  pad1->Draw();
+  pad1->cd();
+  old_sleeve->Draw("AP");
+  old_fitted->Draw("Same");
+  old_non_fitted->Draw("Same");
+
+  pad2->Draw();
+  pad2->cd();
+  new_sleeve->Draw("AIP");
+  new_fitted->Draw("Same");
+  new_non_fitted->Draw("Same");
+
+  auto legend = new TLegend(0.25,0.7,0.4,0.9);
+  legend->SetHeader("Legend","C"); // option "C" allows to center the header
+  legend->AddEntry(old_fitted,"Old PTFE Sleeve Fitted Region");
+  legend->AddEntry(new_fitted,"New PTFE Sleeve Fitted Region");
+  legend->AddEntry(old_non_fitted,"Old PTFE Sleeve Non-Fitted Region");
+  legend->AddEntry(new_non_fitted,"New PTFE Sleeve Non-Fitted Region");
+  legend->Draw();
+
+  c1->SaveAs("graph.pdf");
+
+  return 0;
+}
+
+  
+  

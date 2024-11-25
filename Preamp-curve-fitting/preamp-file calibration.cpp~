@@ -1,0 +1,40 @@
+#include <TFile.h>
+#include <TF1.h>
+#include <TH1.h>
+#include <TGraphErrors.h>
+#include <math.h>
+#include <TRandom2.h>
+#include <TCanvas.h>
+#include <TFitResult.h>
+#include <TLegend.h>
+
+int main(){
+  
+  ///////EVAL BOARD 1 DATA/////////
+
+  //auto graph = new TGraphErrors("board1/Preamp1.csv","%lg,%lg,%lg,%lg");
+  auto graph = new TGraphErrors("Data/TEK0001.CSV","%lg,%lg,%lg,%lg");
+  auto c1 = new TCanvas("c1","test",1000,1000);
+  //TF1 *f1 = new TF1("f1","[0]*x+[1]",-5,5);
+  //graph->Fit(f1);
+  //double ndf=f1->GetNDF();
+  //double chi2=f1->GetChisquare();
+  //double r_chi2 = chi2/ndf;
+  graph->SetMarkerStyle(21);
+  graph->SetMarkerColor(1);
+  graph->SetTitle("Oscilloscope Readout;Time (s);Voltage (V)");
+  graph->Draw("AP");
+  c1->SaveAs("test1.pdf");
+  //std::cout<<"Reduced Chi2 is: ";
+  //std::cout<<r_chi2;
+  //std::cout<<"\n";
+  
+  
+  
+    
+
+  return 0;
+}
+
+  
+  
