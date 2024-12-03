@@ -46,7 +46,6 @@ float SD(std::vector <double> vec){
 
 std::pair< std::pair<double,double> , std::pair<double,double> > ave_points(std::vector<double> volt,std::vector<double> time){//first pair voltage data and error, second pair is time data and error
 
-  TH1* hist = new TH1D("hist","preshist",20000,0,10000);//Histogram for pressure
   double ttot;//total time
   double tave;//time average
   double terr;//time error
@@ -54,21 +53,17 @@ std::pair< std::pair<double,double> , std::pair<double,double> > ave_points(std:
   double verr;//non-time error
   
 
-   for (int ii=0;ii<volt.size();ii++){
+   for (size_t ii=0;ii<volt.size();ii++){
 
-    //hist->Fill(volt[ii]);//fill up histogram
     ttot+=time[ii];//adding up time
-    std::cout<<volt[ii]<<" , ";
     vave=vave+volt[ii];
 
    }
   
-  std::cout<<"\n";
   
   tave = ttot/time.size();//time average
   terr = (time[time.size()-1] - time[0])/2.0;
   vave = vave/25.0; //std::accumulate(volt.begin(),volt.end(),0);
-  std::cout<<vave<<"\n";
   verr = SD(volt);
 
   //vave = hist->GetMean();//average of non time data
@@ -82,21 +77,51 @@ std::pair< std::pair<double,double> , std::pair<double,double> > ave_points(std:
   ret.second.second = terr;
 
   ttot=0;
-  delete gROOT->FindObject("hist");
-  
 
   return ret;
 
 }
 
+float sq_fit(TGraphErrors* graph_to_fit){
+
+  TF1 *f1 = new TF1("f1","[0]",-0.00045,-0.00005);//fit for the square wave
+  TF1 *f2 = new TF1("f2","[0]",0.00005,0.00045);//fit for the square wave
+  //fit to graph
+  graph_to_fit->Fit(f1,"R");
+  graph_to_fit->Fit(f2,"R");
+  //Chi2 of both fits
+  double ndf_1=f1->GetNDF();
+  double chi2_1=f1->GetChisquare();
+  double r_chi2_1 = chi2_1/ndf_1;
+  
+  double ndf_2=f2->GetNDF();
+  double chi2_2=f2->GetChisquare();
+  double r_chi2_2 = chi2_2/ndf_2;
+  
+  //print out chi2 and values of fit
+  std::cout<<"The value of f1 is "<<f1->GetParameter(0)<<" +/- "<<f1->GetParError(0)<<" and the chi2 is "<<r_chi2_1<<"\n";
+  std::cout<<"The value of f2 is "<<f2->GetParameter(0)<<" +/-" <<f2->GetParError(0)<<" and the chi2 is "<<r_chi2_2<<"\n";
+
+  //calculate signal voltage
+  double sig_volt = abs((f1->GetParameter(0)-f2->GetParameter(0)));
+  double sig_volt_err = f1->GetParError(0)+f2->GetParError(0);
+
+  std::cout<<sig_volt<<" +/- "<<sig_volt_err<<"\n";
+
+  double sig_charge = (3.3)*sig_volt;
+  double sig_charge_err = (3.3)*sig_volt_err;
+
+  std::cout<<sig_charge<<" +/- "<<sig_charge_err;
+  
+}
+
 int main(int argc,char* argv[]){
 
-    auto raw_graph = new TGraph(argv[1],"%lg,%lg");
+  TGraphErrors* graph = new TGraphErrors();
+
+  TGraph* raw_graph = new TGraph(argv[1],"%lg,%lg");
 
   int counter = 0;//initialise counter for averaging data
-
-  //double tave=0;//initialise average for time
-  //double vave=0;//initialise average for voltage
 
   std::pair< std::pair<double,double> , std::pair<double,double> > aves;
 
@@ -110,10 +135,8 @@ int main(int argc,char* argv[]){
 
   for (int ii=0;ii<raw_graph->GetN();ii++){
 
-    //tave=tave+graph->GetX()[ii];//add value to average 
-    //vave=vave+graph->GetY()[ii];
-    v_calc.push_back(graph->GetY()[ii]);
-    t_calc.push_back(graph->GetX()[ii]);
+    v_calc.push_back(raw_graph->GetY()[ii]);
+    t_calc.push_back(raw_graph->GetX()[ii]);
 
     counter=counter+1;//increment counter
 
@@ -135,38 +158,25 @@ int main(int argc,char* argv[]){
     
   }
 
-  std::ofstream myfile;
-  myfile.open("test.csv");
-  
-  for (int jj=0;jj<tvec.size();jj++){
+  for (size_t kk=0;kk<vvec.size();kk++){
 
-    myfile<<tvec[jj]<<","<<vvec[jj]<<","<<tvec_err[jj]<<","<<vvec_err[jj]<<std::endl;
+    graph->SetPoint(kk,tvec[kk],vvec[kk]);
+    graph->SetPointError(kk,tvec_err[kk],vvec_err[kk]);
 
   }
-  myfile.close();
-  
+
   ///////EVAL BOARD 1 DATA/////////
 
-  auto graph = new TGraphErrors("test.csv","%lg,%lg,%lg,%lg");
+  sq_fit(graph);
+
   auto c1 = new TCanvas("c1","test",1000,1000);
-  //TF1 *f1 = new TF1("f1","[0]*x+[1]",-5,5);
-  //graph->Fit(f1);
-  //double ndf=f1->GetNDF();
-  //double chi2=f1->GetChisquare();
-  //double r_chi2 = chi2/ndf;
+  
   graph->SetMarkerStyle(21);
   graph->SetMarkerColor(1);
   graph->SetTitle("Oscilloscope Readout;Time (s);Voltage (V)");
   graph->Draw("AP");
   c1->SaveAs("test.pdf");
-  //std::cout<<"Reduced Chi2 is: ";
-  //std::cout<<r_chi2;
-  //std::cout<<"\n";
   
-  
-  
-    
-
   return 0;
 }
 

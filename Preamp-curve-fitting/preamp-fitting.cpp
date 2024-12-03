@@ -82,6 +82,39 @@ std::pair< std::pair<double,double> , std::pair<double,double> > ave_points(std:
 
 }
 
+float sq_fit(TGraphErrors* graph_to_fit){
+
+  TF1 *f1 = new TF1("f1","[0]",-0.00045,-0.00005);//fit for the square wave
+  TF1 *f2 = new TF1("f2","[0]",0.00005,0.00045);//fit for the square wave
+  //fit to graph
+  graph_to_fit->Fit(f1,"R");
+  graph_to_fit->Fit(f2,"R");
+  //Chi2 of both fits
+  double ndf_1=f1->GetNDF();
+  double chi2_1=f1->GetChisquare();
+  double r_chi2_1 = chi2_1/ndf_1;
+  
+  double ndf_2=f2->GetNDF();
+  double chi2_2=f2->GetChisquare();
+  double r_chi2_2 = chi2_2/ndf_2;
+  
+  //print out chi2 and values of fit
+  std::cout<<"The value of f1 is "<<f1->GetParameter(0)<<" +/- "<<f1->GetParError(0)<<" and the chi2 is "<<r_chi2_1<<"\n";
+  std::cout<<"The value of f2 is "<<f2->GetParameter(0)<<" +/-" <<f2->GetParError(0)<<" and the chi2 is "<<r_chi2_2<<"\n";
+
+  //calculate signal voltage
+  double sig_volt = abs((f1->GetParameter(0)-f2->GetParameter(0)));
+  double sig_volt_err = f1->GetParError(0)+f2->GetParError(0);
+
+  std::cout<<sig_volt<<" +/- "<<sig_volt_err<<"\n";
+
+  double sig_charge = (3.3)*sig_volt;
+  double sig_charge_err = (3.3)*sig_volt_err;
+
+  std::cout<<sig_charge<<" +/- "<<sig_charge_err;
+  
+}
+
 int main(int argc,char* argv[]){
 
   TGraphErrors* graph = new TGraphErrors();
@@ -134,25 +167,16 @@ int main(int argc,char* argv[]){
 
   ///////EVAL BOARD 1 DATA/////////
 
+  //sq_fit(graph);
+
   auto c1 = new TCanvas("c1","test",1000,1000);
-  //TF1 *f1 = new TF1("f1","[0]*x+[1]",-5,5);
-  //graph->Fit(f1);
-  //double ndf=f1->GetNDF();
-  //double chi2=f1->GetChisquare();
-  //double r_chi2 = chi2/ndf;
+  
   graph->SetMarkerStyle(21);
   graph->SetMarkerColor(1);
   graph->SetTitle("Oscilloscope Readout;Time (s);Voltage (V)");
   graph->Draw("AP");
   c1->SaveAs("test.pdf");
-  //std::cout<<"Reduced Chi2 is: ";
-  //std::cout<<r_chi2;
-  //std::cout<<"\n";
   
-  
-  
-    
-
   return 0;
 }
 
