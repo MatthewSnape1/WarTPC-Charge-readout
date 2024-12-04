@@ -188,6 +188,8 @@ TGraphErrors* process(TGraph* process_graph){
 
 int main(int argc,char* argv[]){
 
+  if (strcmp(argv[1],"-a")==0){
+
   std::vector<double> ret;
 
   float res0;
@@ -199,8 +201,8 @@ int main(int argc,char* argv[]){
   TGraphErrors* graph_0 = new TGraphErrors();//graph for the preamp peak
   TGraphErrors* graph_1 = new TGraphErrors();//graph for the square wave
 
-  TGraph* raw_graph_0 = new TGraph(argv[1],"%lg,%lg");//raw graph for the preamp peak
-  TGraph* raw_graph_1 = new TGraph(argv[2],"%lg,%lg");//raw graph for the square wave
+  TGraph* raw_graph_0 = new TGraph(argv[2],"%lg,%lg");//raw graph for the preamp peak
+  TGraph* raw_graph_1 = new TGraph(argv[3],"%lg,%lg");//raw graph for the square wave
 
   graph_0 = process(raw_graph_0);
   graph_1 = process(raw_graph_1);
@@ -220,13 +222,33 @@ int main(int argc,char* argv[]){
   myfile << res1<<","<<res0<<","<<res_err1<<","<<res_err0<<"\n";
   myfile.close();
 
-  //auto c1 = new TCanvas("c1","test",1000,1000);
+  }else if (strcmp(argv[1],"-f")==0){
+
+    TGraphErrors* graph = new TGraphErrors(argv[2],"%lg,%lg,%lg,%lg");//graph for the preamp peak
+    TF1 *f1 = new TF1("f1","[0]+[1]*x",0.0,3.1);//fit for the square wave
+
+    graph->Fit(f1);
+
+    double ndf=f1->GetNDF();
+    double chi2=f1->GetChisquare();
+    double r_chi2 = chi2/ndf;
+
+    std::cout<<"The gradient is "<<f1->GetParameter(1)<<" +/- "<<f1->GetParError(1)<<"\n";
+    std::cout<<"The y intercept is "<<f1->GetParameter(0)<<" +/- "<<f1->GetParError(0)<<"\n";
+    std::cout<<"The chi2 is "<<r_chi2<<"\n";
+
+    auto c1 = new TCanvas("c1","test",1000,1000);
   
-  //graph->SetMarkerStyle(21);
-  //graph->SetMarkerColor(1);
-  //graph->SetTitle("Oscilloscope Readout;Time (s);Voltage (V)");
-  //graph->Draw("AP");
-  //c1->SaveAs("test.pdf");
+    graph->SetMarkerStyle(21);
+    graph->SetMarkerColor(1);
+    graph->SetTitle("Preamp Voltage Output vs Input Signal Charge;Signal Charge (pC);Preamp Output Voltage (V)");
+    graph->Draw("APE");
+    c1->SaveAs("test.pdf");
+
+    }else{
+
+	  std::cout<<"Error! Invlaid command\n";
+  }
   
   return 0;
 }
