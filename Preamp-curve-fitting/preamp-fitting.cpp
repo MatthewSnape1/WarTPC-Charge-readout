@@ -22,25 +22,25 @@
 #include <TFitResult.h>
 #include <TLegend.h>
 
-float SD(std::vector <double> vec){
+float SD(std::vector <double> vec){//This function calculates the standard deviation of a set of data
 
   double sum=0.;
   double standev=0.;
   double mean=0.;
 
-  for (size_t ii=0;ii<vec.size();ii++){
+  for (size_t ii=0;ii<vec.size();ii++){//sums up the data
     sum+=vec[ii];
   }
 
-  mean=sum/vec.size();
+  mean=sum/vec.size();//calculates the average
 
   for (size_t jj=0;jj<vec.size();jj++){
 
-    standev+=pow(vec[jj]-mean,2);
+    standev+=pow(vec[jj]-mean,2);//calculates sum of value - mean
     
   }
 
-  return sqrt(standev/vec.size());
+  return sqrt(standev/vec.size());//calculates and return standard deviation
   
 }
 
@@ -56,21 +56,19 @@ std::pair< std::pair<double,double> , std::pair<double,double> > ave_points(std:
    for (size_t ii=0;ii<volt.size();ii++){
 
     ttot+=time[ii];//adding up time
-    vave=vave+volt[ii];
+    vave=vave+volt[ii];//adds up the data
 
    }
   
   
   tave = ttot/time.size();//time average
-  terr = (time[time.size()-1] - time[0])/2.0;
-  vave = vave/25.0; //std::accumulate(volt.begin(),volt.end(),0);
-  verr = SD(volt);
+  terr = (time[time.size()-1] - time[0])/2.0;//time error
+  vave = vave/25.0;//mean of the data
+  verr = SD(volt);//error on data mean
 
-  //vave = hist->GetMean();//average of non time data
-  //verr = hist->GetRMS();
+  std::pair< std::pair<double,double> , std::pair<double,double> > ret;//this will store all of the outputs
 
-  std::pair< std::pair<double,double> , std::pair<double,double> > ret;
-
+  //this section assigns all the values to be returned 
   ret.first.first = vave;
   ret.first.second = verr;
   ret.second.first = tave;
@@ -106,7 +104,7 @@ std::vector<double> sq_fit(TGraphErrors* graph_to_fit, int charge){
 
   if (charge==0){
 
-  //calculate signal voltage
+  //calculate voltage plus error and return it
   double vlt = abs((f1->GetParameter(0)-f2->GetParameter(0)));
   double vlt_err = sqrt(pow(f1->GetParError(0),2)+pow(f2->GetParError(0),2));
 
@@ -117,7 +115,8 @@ std::vector<double> sq_fit(TGraphErrors* graph_to_fit, int charge){
 
 
   if (charge==1){
-
+    
+    //calculate charge plus error and return it
     double vlt = abs((f1->GetParameter(0)-f2->GetParameter(0)));
     double vlt_err = sqrt(pow(f1->GetParError(0),2)+pow(f2->GetParError(0),2));
 
