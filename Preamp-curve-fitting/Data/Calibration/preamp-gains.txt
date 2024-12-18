@@ -1,0 +1,11 @@
+board1-preamp1: gain: 1.50668 +/- 0.102915 V/pC Offest: -0.00264153 +/- 0.0305525 V
+board1-preamp2: gain: 1.54459 +/- 0.110057 V/pC Offest: 0.00318078 +/- 0.0400506 V
+board1-preamp3: gain: 1.48258 +/- 0.0868844 V/pC Offest: 0.00203718 +/- 0.0207032 V
+board1-preamp4: gain: 1.45409 +/- 0.0900171 V/pC Offest: 1.45409 +/- 0.0900171 V
+
+
+
+board2-preamp1: gain: 1.70795 +/- 0.102905 V/pC Offset: -0.00352124 +/-0.0298408 V
+board2-preamp2: gain: 1.73866 +/- 0.129709 V/pC Offset: -0.00234788 +/-0.0492226 V
+board2-preamp3: gain: 1.69984 +/- 0.117298 V/pC Offest: -0.00699265 +/- 0.046869 V
+board2-preamp4: gain: 1.58512 +/- 0.0858136 V/pC Offest: 0.00740062 +/- 0.0308863 V

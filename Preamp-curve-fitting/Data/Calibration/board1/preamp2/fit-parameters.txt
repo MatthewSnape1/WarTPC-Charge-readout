@@ -1,0 +1,16 @@
+ FCN=0.0468268 FROM MIGRAD    STATUS=CONVERGED     117 CALLS         118 TOTAL
+                     EDM=2.03178e-07    STRATEGY= 1      ERROR MATRIX ACCURATE 
+  EXT PARAMETER                                   STEP         FIRST   
+  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
+   1  p0           3.18078e-03   4.00506e-02   1.22945e-05   2.58565e-02
+   2  p1           1.54459e+00   1.10057e-01   3.37778e-05   7.73895e-03
+The gradient is 1.54459 +/- 0.110057
+The y intercept is 0.00318078 +/- 0.0400506
+The chi2 is 0.00468268
+
+
+
+
+
+
+
